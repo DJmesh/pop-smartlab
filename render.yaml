@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pop-smartlab
+    name: app
     env: python
     plan: free
     region: oregon
