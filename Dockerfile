@@ -1,28 +1,27 @@
 # Python com patch (Render exige MAJOR.MINOR.PATCH)
 FROM python:3.12.1-slim
 
-# Evita buffering
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Dependências de sistema (Postgres + build de wheels)
+# Dependências de sistema
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# Instala dependências Python
+# Dependências Python
 COPY requirements.txt .
 RUN pip install --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
-# Copia o projeto
+# Código
 COPY . .
 
 # Coleta estáticos no build (usa SQLite fallback se DATABASE_URL não existir no build)
 RUN python manage.py collectstatic --noinput
 
-# Entrypoint: migrações + gunicorn
+# Entrypoint (migrações + gunicorn)
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
