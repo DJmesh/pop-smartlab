@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}POP - Diagnóstico de Sensores{% endblock %}
+
+{% block content %}
+
+<section class="mb-8">
+  <div class="bg-white p-6 md:p-8 rounded-lg shadow-md border-l-4 border-amber-500">
+    <h2 class="text-2xl md:text-3xl font-bold mb-3">O que é uma POP?</h2>
+    <p class="text-slate-700 text-lg leading-relaxed">
+      Uma <strong>POP (Padronização de Operações/Procedimentos)</strong> é um conjunto de instruções claras,
+      objetivas e sequenciadas que garantem <em>consistência</em>, <em>qualidade</em> e <em>segurança</em> nas atividades do dia a dia.
+      Para quem é leigo, pense na POP como uma receita: lista o objetivo, as ferramentas e os passos, reduzindo erros,
+      acelerando o treinamento e facilitando auditorias. Aqui, aplicamos POPs para o diagnóstico de sensores e SUs no campus.
+    </p>
+  </div>
+</section>
+
+<section id="objetivo" class="mb-12">
+  <h2 class="text-2xl md:text-3xl font-bold mb-4 border-l-4 border-amber-500 pl-4">Objetivo</h2>
+  <p class="text-slate-700 text-lg">
+    Este documento estabelece um guia padronizado para a análise e diagnóstico de sensores, visando assegurar consistência,
+    precisão e eficiência em todas as operações.
+  </p>
+</section>
+
+<section id="ferramentas" class="mb-16">
+  <h2 class="text-2xl md:text-3xl font-bold mb-6 border-l-4 border-amber-500 pl-4">Ferramentas Necessárias</h2>
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 text-center">
+    {% for t in tools %}
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center space-y-3">
+        <span class="text-3xl leading-none">{{ t.icon }}</span>
+        <span class="font-medium">{{ t.label }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+
+<section id="processo">
+  <h2 class="text-2xl md:text-3xl font-bold mb-8 border-l-4 border-amber-500 pl-4">Passo a Passo do Processo</h2>
+
+  <div class="space-y-8">
+    {% comment %} Passo 1 {% endcomment %}
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500 transition hover:-translate-y-1 hover:shadow-lg">
+      <h3 class="flex items-center text-xl font-bold mb-4">
+        <span class="bg-amber-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">1</span>
+        Check-in do Equipamento
+      </h3>
+      <ul class="list-disc list-inside space-y-2 text-slate-600">
+        <li><strong>Registro:</strong> Anote número de série e modelo.</li>
+        <li><strong>Identificação:</strong> Data de recebimento e solicitante.</li>
+        <li><strong>Inspeção Inicial:</strong> Fotos do estado original e danos visíveis.</li>
+      </ul>
+    </div>
+
+    {% comment %} Passo 2 {% endcomment %}
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500 transition hover:-translate-y-1 hover:shadow-lg">
+      <h3 class="flex items-center text-xl font-bold mb-4">
+        <span class="bg-amber-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">2</span>
+        Análise Externa
+      </h3>
+      <ul class="list-disc list-inside space-y-2 text-slate-600">
+        <li>Verifique carcaça (rachaduras/corrosão) e conectores/cabos.</li>
+      </ul>
+    </div>
+
+    {% comment %} Passo 3 {% endcomment %}
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500 transition hover:-translate-y-1 hover:shadow-lg">
+      <h3 class="flex items-center text-xl font-bold mb-4">
+        <span class="bg-amber-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">3</span>
+        Desmontagem Segura
+      </h3>
+      <p class="text-slate-600 mb-4"><strong class="text-red-600">ATENÇÃO:</strong> Siga o vídeo de treinamento.</p>
+      <a href="#" onclick="openVideoLink()" class="inline-flex items-center px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition shadow">
+        ▶️ Assistir Vídeo de Desmontagem
+      </a>
+    </div>
+
+    {% comment %} Passo 4 {% endcomment %}
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500 transition hover:-translate-y-1 hover:shadow-lg">
+      <h3 class="flex items-center text-xl font-bold mb-4">
+        <span class="bg-amber-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">4</span>
+        Pontos de Verificação Interna
+      </h3>
+      <div class="space-y-3 text-slate-600">
+        <p><strong>1. Inspeção Visual:</strong> Componentes soltos, soldas frias, danos.</p>
+        <p><strong>2. Teste Elétrico:</strong></p>
+        <ul class="list-disc list-inside pl-6 space-y-1">
+          <li><strong>Tensão:</strong> Alimentação e saída.</li>
+          <li><strong>Capacitores:</strong> Inchaço/vazamento.</li>
+          <li><strong>Integridade:</strong> Continuidade de fusíveis/diodos.</li>
+          <li><strong>Resistores:</strong> Medir resistências-chave.</li>
+        </ul>
+        <p><strong>3. PCB:</strong> Trilhas rompidas/curtos.</p>
+      </div>
+    </div>
+
+    {% comment %} Passo 5 {% endcomment %}
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500 transition hover:-translate-y-1 hover:shadow-lg">
+      <h3 class="flex items-center text-xl font-bold mb-4">
+        <span class="bg-amber-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">5</span>
+        Montagem e Teste Final
+      </h3>
+      <ul class="list-disc list-inside space-y-2 text-slate-600">
+        <li><strong>Montagem:</strong> Ordem inversa, fixação correta.</li>
+        <li><strong>Teste:</strong> Valide resposta e precisão em ambiente de teste.</li>
+      </ul>
+      <a href="#" onclick="openVideoLink()" class="mt-4 inline-flex items-center px-6 py-2 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-800 transition shadow">
+        ▶️ Assistir Vídeo de Montagem
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('a[href^="/#"], a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const target = document.querySelector(this.getAttribute('href').replace("/",""));
+      if(!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+  function openVideoLink(){
+    const modal=document.createElement('div');
+    modal.className='fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+    modal.innerHTML=`
+      <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-md">
+        <h3 class="text-xl font-bold mb-4">Ação Necessária</h3>
+        <p class="text-slate-600 mb-6">Insira o URL do vídeo de treinamento no template.</p>
+        <button onclick="this.parentElement.parentElement.remove()" class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition">Entendi</button>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+</script>
+{% endblock %}

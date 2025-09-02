@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}POP - Smartlab{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'img/smartlogo-only.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+  {% block head_extra %}{% endblock %}
+  <style> body{font-family:'Inter',sans-serif;background:#f5f5f4} </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+  {% include "partials/navbar.html" %}
+  <main class="container mx-auto px-6 py-8 md:py-12 flex-1">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/footer.html" %}
+</body>
+</html>

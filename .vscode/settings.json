@@ -1,0 +1,12 @@
+{
+  "maven.terminal.customEnv": [
+    {
+      "environmentVariable": "DJANGO_SECRET_KEY",
+      "value": "django-insecure-8y$7H3rO8i0Gx0v"
+    },
+    {
+      "environmentVariable": "DJANGO_DEBUG",
+      "value": "true"
+    }
+  ]
+}

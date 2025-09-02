@@ -1,0 +1,17 @@
+{% load static %}
+<header class="bg-white shadow-sm sticky top-0 z-10">
+  <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="/" class="flex items-center gap-3">
+      <img src="{% static 'img/smartlogo-only.png' %}" alt="Smart Lab Facens Logo" class="h-10">
+      <span class="sr-only">Início</span>
+    </a>
+    <h1 class="text-xl md:text-2xl font-bold text-slate-900">POP: Diagnóstico de Sensores</h1>
+    <div class="hidden md:flex space-x-6">
+      <a href="/#objetivo" class="text-slate-600 hover:text-amber-600 transition">Objetivo</a>
+      <a href="/#ferramentas" class="text-slate-600 hover:text-amber-600 transition">Ferramentas</a>
+      <a href="/#processo" class="text-slate-600 hover:text-amber-600 transition">Processo</a>
+      <a href="{% url 'diagnostics:new' %}" class="text-slate-600 hover:text-amber-600 transition">Novo Diagnóstico</a>
+      <a href="{% url 'diagnostics:list' %}" class="text-slate-600 hover:text-amber-600 transition">Buscar</a>
+    </div>
+  </nav>
+</header>
