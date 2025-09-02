@@ -25,5 +25,8 @@ RUN python manage.py collectstatic --noinput
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+RUN python manage.py makemigrations diagnostics
+RUN python manage.py migrate diagnostics
+
 EXPOSE 8000
 CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn app.wsgi:application --bind 0.0.0.0:8000 --log-file -"]
