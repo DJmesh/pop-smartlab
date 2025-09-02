@@ -8,10 +8,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
+      # Se você ainda quer rodar checks Django no host (sem docker):
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -30,11 +31,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Django check
-        run: python manage.py check --deploy --fail-level WARNING
+      - name: Django check (prod-like)
+        env:
+          # valores “seguros” só para rodar o check
+          SECRET_KEY: "ci-not-a-real-secret"
+          DEBUG: "False"
+          DJANGO_ALLOWED_HOSTS: "localhost"
+        run: |
+          python manage.py check --deploy --fail-level WARNING
+          # opcional: valida migrações
+          python manage.py makemigrations --check --dry-run
 
-      # se tiver testes:
+      # (Opcional, mas recomendado) Valida o Dockerfile constrói
+      - name: Docker build (validation)
+        run: |
+          docker build -t app-ci:latest .
+
+      # Se tiver testes Django:
       # - name: Run tests
+      #   env:
+      #     SECRET_KEY: "ci-not-a-real-secret"
+      #     DEBUG: "False"
+      #     DJANGO_ALLOWED_HOSTS: "localhost"
       #   run: python manage.py test
 
   deploy:

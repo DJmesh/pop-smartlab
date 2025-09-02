@@ -1,22 +1,17 @@
 services:
   - type: web
     name: app
-    env: python
+    env: docker
     plan: free
     region: oregon
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python manage.py collectstatic --noinput
-      python manage.py migrate --noinput
-    startCommand: gunicorn app.wsgi:application --log-file -
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12
-      - key: DJANGO_DEBUG
-        value: "false"
-      - key: DJANGO_SECRET_KEY
+      - key: SECRET_KEY
         generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: "app.onrender.com"
       - key: DATABASE_URL
         fromDatabase:
           name: pop-db
