@@ -114,7 +114,7 @@
         <div class="text-3xl">🎬</div>
         <p class="text-slate-700">
           Arraste e solte aqui ou <span class="text-amber-700 font-semibold underline">toque/clique</span>
-          para selecionar vídeos (máx. 20&nbsp;MB por arquivo).
+          para selecionar vídeos (máx. 200&nbsp;MB por arquivo).
         </p>
         <p class="text-xs text-slate-500">Faremos compressão automática no servidor quando possível.</p>
       </div>
@@ -125,17 +125,26 @@
   </section>
 
   <div class="flex items-center gap-3 pt-2">
-    <button class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition">
+    <button id="submit-btn" class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
       Salvar
     </button>
     <a href="{% url 'diagnostics:list' %}" class="px-6 py-2 border rounded-lg hover:bg-slate-50">
       Voltar à busca
     </a>
   </div>
+
+  <p id="size-warning" class="text-red-600 text-sm mt-2 font-medium" style="display: none;">
+    O tamanho total dos vídeos excede 200 MB. Remova algum arquivo para poder salvar.
+  </p>
 </form>
 
 <!-- Script de UX (drag-and-drop + preview + contadores + remover + merge selections) -->
 <script>
+  // NOVO: Definir o limite máximo em bytes e pegar os elementos do DOM
+  const MAX_TOTAL_VIDEO_BYTES = 200 * 1024 * 1024;
+  const submitBtn = document.getElementById('submit-btn');
+  const sizeWarning = document.getElementById('size-warning');
+
   // Cria/atualiza FileList (FileList é read-only)
   function setInputFiles(input, filesArray) {
     const dt = new DataTransfer();
@@ -163,7 +172,6 @@
 
     let filesState = [];
 
-    // Se havia seleção anterior (ex.: navega/volta)
     if (input.files && input.files.length) {
       filesState = Array.from(input.files);
     }
@@ -190,21 +198,24 @@
         if (list) list.innerHTML = '';
       }
 
+      if (!filesState.length && isVideo) {
+        // NOVO: Garante que o botão seja reativado se todos os vídeos forem removidos
+        submitBtn.disabled = false;
+        sizeWarning.style.display = 'none';
+      }
+
       if (!filesState.length) return;
 
       if (!isVideo && previewGrid) {
         filesState.forEach((file, idx) => {
           if (!file.type.startsWith('image/')) return;
           const url = URL.createObjectURL(file);
-
           const card = document.createElement('div');
           card.className = "relative group rounded-lg overflow-hidden border";
-
           const img = document.createElement('img');
           img.src = url;
           img.className = "w-full h-36 object-cover";
           img.onload = () => URL.revokeObjectURL(url);
-
           const removeBtn = document.createElement('button');
           removeBtn.type = "button";
           removeBtn.className = "absolute top-2 right-2 bg-white/90 text-red-600 border border-red-200 px-2 py-1 text-xs rounded shadow opacity-0 group-hover:opacity-100 transition";
@@ -213,7 +224,6 @@
             e.preventDefault();
             removeAt(idx);
           });
-
           card.appendChild(img);
           card.appendChild(removeBtn);
           previewGrid.appendChild(card);
@@ -223,7 +233,11 @@
       if (isVideo) {
         const list = document.getElementById('videos-list');
         if (!list) return;
+
+        let totalVideoSize = 0; // NOVO: Acumulador para o tamanho total
+
         filesState.forEach((file, idx) => {
+          totalVideoSize += file.size; // NOVO: Soma o tamanho do arquivo atual
           const li = document.createElement('li');
           const size = (file.size / (1024*1024)).toFixed(1);
           li.className = "flex items-center justify-between gap-3";
@@ -231,10 +245,10 @@
           nameSpan.textContent = `• ${file.name} (${size} MB)`;
           li.appendChild(nameSpan);
 
-          if (file.size > 20*1024*1024) {
+          if (file.size > 200*1024*1024) { // Lógica de aviso por arquivo (já corrigida)
             const warn = document.createElement('span');
             warn.className = "text-red-600 text-xs";
-            warn.textContent = "excede 20MB";
+            warn.textContent = "excede 200MB";
             li.appendChild(warn);
           }
 
@@ -246,14 +260,22 @@
             e.preventDefault();
             removeAt(idx);
           });
-
           li.appendChild(btn);
           list.appendChild(li);
         });
+
+        // NOVO: Lógica para desabilitar/habilitar o botão de submit
+        if (totalVideoSize > MAX_TOTAL_VIDEO_BYTES) {
+          submitBtn.disabled = true;
+          sizeWarning.style.display = 'block'; // Mostra o aviso
+        } else {
+          submitBtn.disabled = false;
+          sizeWarning.style.display = 'none'; // Esconde o aviso
+        }
       }
     }
 
-    // Drag & Drop
+    // Drag & Drop (sem alterações)
     ['dragenter','dragover'].forEach(ev => {
       zone.addEventListener(ev, (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -266,7 +288,6 @@
         zone.classList.remove('bg-amber-50');
       });
     });
-
     zone.addEventListener('drop', (e) => {
       const dropped = Array.from(e.dataTransfer.files || []);
       if (!dropped.length) return;
@@ -275,7 +296,6 @@
       render();
     });
 
-    // Mudança via seletor nativo (AGORA: MERGE, não sobrescreve)
     input.addEventListener('change', () => {
       const newly = Array.from(input.files || []);
       filesState = mergeFiles(filesState, newly);
@@ -283,7 +303,6 @@
       render();
     });
 
-    // Render inicial
     render();
   }
 
