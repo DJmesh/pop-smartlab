@@ -4,79 +4,120 @@
 {% block content %}
 <h2 class="text-2xl md:text-3xl font-bold mb-6 border-l-4 border-amber-500 pl-4">Buscar Diagnósticos</h2>
 
-<form method="get" class="bg-white p-6 rounded-lg shadow-md grid md:grid-cols-5 gap-4 mb-6">
-  <div class="md:col-span-2">
-    <label class="block text-sm font-medium mb-1">Título contém</label>
-    <input type="text" name="q" value="{{ form.q.value|default_if_none:'' }}" class="w-full border rounded-lg px-3 py-2">
-  </div>
+<!-- Filtros: em telas pequenas, viram um "painel" colapsável -->
+<details class="bg-white rounded-lg shadow-md border mb-6" {% if request.GET %}open{% endif %}>
+  <summary class="list-none cursor-pointer select-none px-6 py-4 flex items-center justify-between">
+    <span class="font-medium text-slate-800">Filtros</span>
+    <span class="text-sm text-slate-500">{{ page_obj.paginator.count }} resultado(s)</span>
+  </summary>
 
-  <div>
-    <label class="block text-sm font-medium mb-1">Categoria</label>
-    <select name="category" class="w-full border rounded-lg px-3 py-2">
-      {% for val,label in form.fields.category.choices %}
-        <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-  </div>
+  <form method="get" class="px-6 pb-6 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-medium mb-1">Título contém</label>
+      <input type="text" name="q" value="{{ form.q.value|default_if_none:'' }}"
+             class="w-full border rounded-lg px-3 py-2" placeholder="Ex.: sensor, falha, etc.">
+    </div>
 
-  <div>
-    <label class="block text-sm font-medium mb-1">De (data)</label>
-    <input type="date" name="start_date" value="{{ form.start_date.value|default_if_none:'' }}" class="w-full border rounded-lg px-3 py-2">
-  </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Categoria</label>
+      <select name="category" class="w-full border rounded-lg px-3 py-2">
+        {% for val,label in form.fields.category.choices %}
+          <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-  <div>
-    <label class="block text-sm font-medium mb-1">Até (data)</label>
-    <input type="date" name="end_date" value="{{ form.end_date.value|default_if_none:'' }}" class="w-full border rounded-lg px-3 py-2">
-  </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">De (data)</label>
+      <input type="date" name="start_date" value="{{ form.start_date.value|default_if_none:'' }}" class="w-full border rounded-lg px-3 py-2">
+    </div>
 
-  <div class="md:col-span-2">
-    <label class="block text-sm font-medium mb-1">Ordenar por</label>
-    <select name="order_by" class="w-full border rounded-lg px-3 py-2">
-      {% for val,label in form.fields.order_by.choices %}
-        <option value="{{ val }}" {% if form.order_by.value == val %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-  </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Até (data)</label>
+      <input type="date" name="end_date" value="{{ form.end_date.value|default_if_none:'' }}" class="w-full border rounded-lg px-3 py-2">
+    </div>
 
-  <div class="md:col-span-3 flex items-end gap-3">
-    <button class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition">Filtrar</button>
-    <a href="{% url 'diagnostics:list' %}" class="px-6 py-2 border rounded-lg hover:bg-slate-50">Limpar</a>
-    <a href="{% url 'diagnostics:new' %}" class="px-6 py-2 border rounded-lg hover:bg-slate-50">Novo Diagnóstico</a>
-  </div>
-</form>
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-medium mb-1">Ordenar por</label>
+      <select name="order_by" class="w-full border rounded-lg px-3 py-2">
+        {% for val,label in form.fields.order_by.choices %}
+          <option value="{{ val }}" {% if form.order_by.value == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
+    <div class="sm:col-span-2 lg:col-span-3 flex flex-wrap items-end gap-3">
+      <button class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition">Filtrar</button>
+      <a href="{% url 'diagnostics:list' %}" class="px-6 py-2 border rounded-lg hover:bg-slate-50">Limpar</a>
+      <a href="{% url 'diagnostics:new' %}" class="px-6 py-2 border rounded-lg hover:bg-slate-50">Novo Diagnóstico</a>
+    </div>
+  </form>
+</details>
+
+<!-- Lista -->
 <div class="space-y-4">
   {% for item in page_obj.object_list %}
     <article class="bg-white p-5 rounded-lg shadow border">
-      <div class="flex items-center justify-between gap-3 flex-wrap">
-        <h3 class="text-lg font-semibold">{{ item.title }}</h3>
-        {% if item.category == "critica" %}
-          <span class="px-2 py-1 text-sm rounded bg-red-100 text-red-700 border border-red-200">Crítica</span>
-        {% else %}
-          <span class="px-2 py-1 text-sm rounded bg-emerald-100 text-emerald-700 border border-emerald-200">Normal</span>
-        {% endif %}
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+          <h3 class="text-lg font-semibold truncate">
+            <a href="{% url 'diagnostics:detail' item.id %}" class="text-amber-700 hover:underline">
+              {{ item.title }}
+            </a>
+          </h3>
+          <div class="flex flex-wrap gap-3 text-slate-600 mt-1 text-sm">
+            <span><strong>SU:</strong> {{ item.su_identifier|default:"—" }}</span>
+            <span class="hidden sm:inline">•</span>
+            <span><strong>Autor:</strong> {{ item.user_name }} ({{ item.user_email }})</span>
+            <span class="hidden sm:inline">•</span>
+            <span><strong>Criado:</strong> {{ item.created_at|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+        <div class="shrink-0">
+          {% if item.category == "critica" %}
+            <span class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 border border-red-200">Crítica</span>
+          {% else %}
+            <span class="px-2 py-1 text-xs rounded bg-emerald-100 text-emerald-700 border border-emerald-200">Normal</span>
+          {% endif %}
+        </div>
       </div>
-      <div class="text-slate-600 mt-2">
-        <p class="mb-1"><strong>SU:</strong> {{ item.su_identifier|default:"—" }}</p>
-        <p class="mb-1"><strong>Autor:</strong> {{ item.user_name }} ({{ item.user_email }})</p>
-        <p class="mb-1"><strong>Criado em:</strong> {{ item.created_at|date:"d/m/Y H:i" }}</p>
+
+      {% if item.message %}
+        <p class="mt-3 text-slate-700 whitespace-pre-line leading-relaxed line-clamp-4">
+          {{ item.message }}
+        </p>
+      {% endif %}
+
+      <div class="mt-4">
+        <a href="{% url 'diagnostics:detail' item.id %}"
+           class="inline-flex items-center gap-2 text-sm text-amber-700 hover:text-amber-800 hover:underline">
+          Ver detalhes
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
       </div>
-      <p class="mt-3 text-slate-700 whitespace-pre-line">{{ item.message }}</p>
     </article>
   {% empty %}
     <p class="text-slate-600">Nenhum diagnóstico encontrado.</p>
   {% endfor %}
 </div>
 
+<!-- Paginação -->
 {% if page_obj.paginator.num_pages > 1 %}
-  <div class="flex gap-2 mt-6">
+  <nav class="flex flex-wrap items-center gap-2 mt-6" role="navigation" aria-label="Paginação">
     {% if page_obj.has_previous %}
-      <a href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:page_obj.number|stringformat:'s' }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded">« Anterior</a>
+      <a href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:page_obj.number|stringformat:'s' }}&{% endif %}page={{ page_obj.previous_page_number }}"
+         class="px-3 py-1 border rounded hover:bg-slate-50">« Anterior</a>
     {% endif %}
+
     <span class="px-3 py-1 border rounded bg-slate-50">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
     {% if page_obj.has_next %}
-      <a href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:page_obj.number|stringformat:'s' }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded">Próxima »</a>
+      <a href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:page_obj.number|stringformat:'s' }}&{% endif %}page={{ page_obj.next_page_number }}"
+         class="px-3 py-1 border rounded hover:bg-slate-50">Próxima »</a>
     {% endif %}
-  </div>
+  </nav>
 {% endif %}
 {% endblock %}

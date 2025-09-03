@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Diagnóstico #{{ report.id }} - POP{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
+  <h2 class="text-2xl md:text-3xl font-bold border-l-4 border-amber-500 pl-4">
+    Diagnóstico: {{ report.title }}
+  </h2>
+  <a href="{% url 'diagnostics:list' %}" class="px-4 py-2 border rounded-lg hover:bg-slate-50">Voltar</a>
+</div>
+
+<!-- Card principal -->
+<div class="bg-white p-5 rounded-lg shadow border mb-6">
+  <div class="flex items-center justify-between gap-3 flex-wrap">
+    <div class="space-y-1 text-slate-700">
+      <p><strong class="text-slate-900">ID:</strong> {{ report.id }}</p>
+      <p><strong class="text-slate-900">SU:</strong> {{ report.su_identifier|default:"—" }}</p>
+      <p><strong class="text-slate-900">Autor:</strong> {{ report.user_name }} <span class="text-slate-500">({{ report.user_email }})</span></p>
+      <p><strong class="text-slate-900">Criado em:</strong> {{ report.created_at|date:"d/m/Y H:i" }}</p>
+    </div>
+    <div>
+      {% if report.category == "critica" %}
+        <span class="px-2 py-1 text-sm rounded bg-red-100 text-red-700 border border-red-200">Crítica</span>
+      {% else %}
+        <span class="px-2 py-1 text-sm rounded bg-emerald-100 text-emerald-700 border border-emerald-200">Normal</span>
+      {% endif %}
+    </div>
+  </div>
+  <p class="mt-3 text-slate-800 whitespace-pre-line leading-relaxed">{{ report.message }}</p>
+</div>
+
+{% comment %} <!-- Uploads -->
+<div class="grid md:grid-cols-2 gap-6 mb-10">
+  <!-- Upload Imagens -->
+  <section class="bg-white p-5 rounded-lg shadow border">
+    <h3 class="text-lg font-semibold mb-3">Enviar Imagens</h3>
+    <form method="post" enctype="multipart/form-data" class="space-y-3">
+      {% csrf_token %}
+      <div class="flex items-center gap-3">
+        {{ img_form.images }}
+        <button class="px-5 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">Enviar</button>
+      </div>
+      <p class="text-xs text-slate-500">Você pode selecionar múltiplos arquivos. Formatos comuns: JPG/PNG/WEBP.</p>
+    </form>
+  </section>
+
+  <!-- Upload Vídeos -->
+  <section class="bg-white p-5 rounded-lg shadow border">
+    <h3 class="text-lg font-semibold mb-3">Enviar Vídeos</h3>
+    <form method="post" enctype="multipart/form-data" class="space-y-3">
+      {% csrf_token %}
+      <div class="flex items-center gap-3">
+        {{ vid_form.videos }}
+        <button class="px-5 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800">Enviar</button>
+      </div>
+      <p class="text-xs text-slate-500">Máx. 20 MB por vídeo. Tentaremos comprimir automaticamente quando possível.</p>
+    </form>
+  </section>
+</div> {% endcomment %}
+
+<!-- Galeria de Imagens -->
+<section class="mb-12">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-lg font-semibold">Imagens</h3>
+    {% if images %}<span class="text-sm text-slate-500">{{ images|length }} arquivo(s)</span>{% endif %}
+  </div>
+
+  {% if images %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {% for img in images %}
+        <button
+          type="button"
+          class="group relative rounded-lg overflow-hidden border bg-slate-50 hover:shadow focus:outline-none focus:ring-2 focus:ring-amber-500"
+          data-full-url="{{ img.file.url }}"
+          aria-label="Abrir imagem em tamanho maior"
+        >
+          <img
+            src="{{ img.file.url }}"
+            alt="Imagem {{ forloop.counter }}"
+            loading="lazy"
+            class="w-full aspect-[4/3] object-cover"
+          />
+          <span class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></span>
+        </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-slate-500">Nenhuma imagem enviada.</p>
+  {% endif %}
+</section>
+
+<!-- Galeria de Vídeos -->
+<section class="mb-10">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-lg font-semibold">Vídeos</h3>
+    {% if videos %}<span class="text-sm text-slate-500">{{ videos|length }} arquivo(s)</span>{% endif %}
+  </div>
+
+  {% if videos %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {% for v in videos %}
+        <div class="rounded-lg overflow-hidden border bg-black">
+          <video controls class="w-full aspect-video" preload="metadata">
+            <source src="{{ v.file.url }}" type="video/mp4">
+            Seu navegador não suporta vídeo HTML5.
+          </video>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-slate-500">Nenhum vídeo enviado.</p>
+  {% endif %}
+</section>
+
+<!-- Modal de Imagem -->
+<div
+  id="image-modal"
+  class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 md:p-8"
+  role="dialog" aria-modal="true" aria-labelledby="image-modal-title"
+>
+  <div class="mx-auto max-w-6xl relative">
+    <button
+      id="image-modal-close"
+      class="absolute -top-2 -right-2 md:-top-4 md:-right-4 bg-white text-slate-800 rounded-full shadow p-2 hover:bg-slate-100"
+      aria-label="Fechar modal"
+    >
+      <!-- X icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <figure class="bg-white rounded-lg overflow-hidden shadow">
+      <img id="image-modal-img" src="" alt="Pré-visualização" class="w-full h-auto max-h-[80vh] object-contain" />
+      <figcaption id="image-modal-title" class="px-4 py-2 text-sm text-slate-600 truncate"></figcaption>
+    </figure>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const modal = document.getElementById('image-modal');
+    const modalImg = document.getElementById('image-modal-img');
+    const modalTitle = document.getElementById('image-modal-title');
+    const closeBtn = document.getElementById('image-modal-close');
+
+    function openModal(src, title) {
+      modalImg.src = src;
+      modalTitle.textContent = title || 'Imagem';
+      modal.classList.remove('hidden');
+      document.addEventListener('keydown', onEsc);
+    }
+    function closeModal() {
+      modal.classList.add('hidden');
+      modalImg.src = '';
+      document.removeEventListener('keydown', onEsc);
+    }
+    function onEsc(e) {
+      if (e.key === 'Escape') closeModal();
+    }
+
+    // Clicar no backdrop fecha
+    modal.addEventListener('click', (e) => {
+      // se clicou no próprio backdrop (não dentro da figura)
+      if (e.target === modal) closeModal();
+    });
+    closeBtn.addEventListener('click', closeModal);
+
+    // Liga cada miniatura para abrir modal (sem baixar)
+    document.querySelectorAll('[data-full-url]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const src = btn.getAttribute('data-full-url');
+        // tenta extrair nome do arquivo só pra legenda
+        const parts = (src || '').split('/');
+        const name = parts.length ? decodeURIComponent(parts[parts.length - 1]) : 'Imagem';
+        openModal(src, name);
+      });
+    });
+  })();
+</script>
+{% endblock %}
