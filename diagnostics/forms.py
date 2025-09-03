@@ -1,10 +1,9 @@
-# diagnostics/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import DiagnosticReport
 from .widgets import MultiFileInput
 
-MAX_VIDEO_MB = 20
+MAX_VIDEO_MB = 200
 MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024
 
 
