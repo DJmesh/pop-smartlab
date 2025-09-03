@@ -41,7 +41,7 @@ class DiagnosticReport(models.Model):
 # -------------------------
 # Helpers de upload
 # -------------------------
-MAX_VIDEO_MB = 20
+MAX_VIDEO_MB = 200
 
 def report_image_upload_to(instance, filename):
     # media/diagnostics/<report_id>/images/<uuid>.<ext>
